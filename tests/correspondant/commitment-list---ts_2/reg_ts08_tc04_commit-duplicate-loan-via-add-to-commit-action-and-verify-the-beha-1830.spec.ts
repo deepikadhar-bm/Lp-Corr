@@ -1,0 +1,92 @@
+import { test, expect } from '@playwright/test';
+import path from 'path';
+import * as stepGroups from '../../../src/helpers/step-groups';
+
+test.describe('Commitment List - TS_2', () => {
+  let vars: Record<string, string> = {};
+
+  test.beforeEach(async () => {
+    vars = {};
+  });
+
+  test('REG_TS08_TC04_Commit duplicate loan via add to commit action and verify the behaviour', async ({ page }) => {
+    const testData: Record<string, string> = {}; // TODO: Load from test data profile
+
+    await stepGroups.stepGroup_Login_to_CORR_Portal(page, vars);
+    await page.locator("//ul[contains(@class, 'navbar-nav') and contains(@class, 'flex-column')]/li[3]/a[1]").click();
+    await page.locator("//span[text()[normalize-space() = \"Committed List\"]]").click();
+    await page.locator("//input[@id='searchTagInput']").click();
+    vars["BidReqId"] = testData["RequestIdFrom5-1"];
+    await page.locator("//input[@id='searchTagInput']").fill(vars["BidReqId"]);
+    await page.locator("//span[contains(@class,'circle')]").waitFor({ state: 'hidden' });
+    await page.locator("//span[normalize-space(text())=\"Bid Request ID\"]").click();
+    await page.locator("//td[@data-title=\"Execution Type\"]//div[normalize-space(text())=\"STANDARD\"]//ancestor::tr//td[@data-title=\"Comm. ID\"]//a[contains(@aria-label,\"View details for commitment\")]").click();
+    await page.locator("//div[text()[normalize-space() = \"Total Loans\"]]").click();
+    vars["CommittedCorrLoan"] = await page.locator("//span[contains(@class,\"fa fas fa-lock lock-icon\")]//ancestor::tr//td[@data-title=\"Corr. Loan#\"]//button[contains(@class,\"btn bg-transparent text-primary\")][1]").textContent() || '';
+    vars["OpenAuthLimit"] = await page.locator("//div[contains(text(),\"Open Auth Limit:\")]//following-sibling::div").textContent() || '';
+    vars["OpenAuthLimitStandard"] = String('').split("(")["0"] || '';
+    vars["OpenAuthLimitPercentageStandard"] = String('').split("(")["1"] || '';
+    vars["OpenAuthLimitPercentageStandard"] = String(vars["OpenAuthLimitPercentageStandard"]).replace(/\)%/g, '');
+    vars["AuthLimitStandard"] = await page.locator("//div[normalize-space(text())=\"Auth Limit:\"]/following-sibling::div").textContent() || '';
+    vars["LastCommitedBidStandard"] = await page.locator("//div[normalize-space(text())=\"Last Committed Bid:\"]/following-sibling::div").textContent() || '';
+    vars["LastCommitedBidStandard"] = String('').split("|")["0"] || '';
+    vars["LastCommitedBidStandard"] = String(vars["LastCommitedBidStandard"]).trim();
+    vars["LastCommittedBidLoanAmountStandard"] = await page.locator("//div[contains(text(),\"Last Committed Bid:\")]//following::span[1]").textContent() || '';
+    vars["LastCommittedBidLoanAmountStandard"] = String(vars["LastCommittedBidLoanAmountStandard"]).substring(3);
+    await stepGroups.stepGroup_Storing_Required_Loan_Number_Details(page, vars);
+    await page.locator("//a[contains(text(),\"Commitment List\")]//i[contains(@class,\"fas fa-arrow-left \")]").click();
+    await page.locator("//span[contains(@class,'circle')]").waitFor({ state: 'hidden' });
+    await page.locator("//td[@data-title=\"Execution Type\"]//div[normalize-space(text())=\"CHASE_DIRECT\"]//ancestor::tr//td[@data-title=\"Comm. ID\"]//a[contains(@aria-label,\"View details for commitment\")]").click();
+    await page.locator("//div[text()[normalize-space() = \"Total Loans\"]]").waitFor({ state: 'visible' });
+    vars["NoOfLoansBeforeCommit"] = await page.locator("//div[normalize-space(text())=\"No. Loans\"]//following-sibling::h5").textContent() || '';
+    vars["CommitID"] = await page.locator("//div[text()=\"Commit. ID\"]/following-sibling::h5").textContent() || '';
+    await page.locator("//div[text()[normalize-space() = \"Total Loans\"]]").click();
+    await page.locator("//button[text()=\"$|CommittedCorrLoan|\"]/ancestor::tr//input[@type=\"checkbox\"]").waitFor({ state: 'visible' });
+    await page.locator("//button[text()=\"$|CommittedCorrLoan|\"]/ancestor::tr//input[@type=\"checkbox\"]").check();
+    vars["LoanCountScreen"] = String(await page.locator("//tr[@class=\"row-highlight\"]").count());
+    vars["SelectedLoanValueScreen"] = await page.locator("//button[contains(text(),\"$|CommittedCorrLoan|\")]/../../following-sibling::td[@data-title=\"Loan Amount\"]").textContent() || '';
+    await page.locator("//button[@id='commitdropdownMenuButton']").waitFor({ state: 'visible' });
+    await page.locator("//button[@id='commitdropdownMenuButton']").click();
+    await page.locator("//div[text()=\"$|CommitID|\"]//preceding-sibling::div[contains(text(),\"Commitment Order\")]").click();
+    vars["BidRequestIDPopup"] = await page.locator("//div[@class=\"mb-2\"]//b[text()]").textContent() || '';
+    vars["LoanValuePopup"] = await page.locator("//div[text()=\"Loan Value\"]//following-sibling::div/b").textContent() || '';
+    vars["SelectedLoansCountPopup"] = await page.locator("//div[text()=\"Selected Loans\"]//following-sibling::div/b").textContent() || '';
+    expect(String(vars["BidReqId"])).toBe(vars["BidRequestIDPopup"]);
+    expect(String(vars["SelectedLoanValueScreen"])).toBe(vars["LoanValuePopup"]);
+    expect(String(vars["LoanCountScreen"])).toBe(vars["SelectedLoansCountPopup"]);
+    await page.locator("//span[text()=\"Yes, Commit\"]//parent::button").click();
+    await page.locator("//button[contains(text(),\"Okay\")]").waitFor({ state: 'visible' });
+    vars["space"] = "key_blank";
+    vars["CommitmentUpdateText"] = "Commitment" + vars["space"] + vars["CommitID"] + vars["space"] + "is" + vars["space"] + "updated.";
+    await expect(page.locator("(//div[@class=\"modal-body\"]//div)[2]")).toContainText(vars["CommitmentUpdateText"]);
+    await expect(page.locator("(//li[text()])[1]")).toContainText("Loans failed to be added to commitment");
+    vars["LoanDuplicateText"] = "Loan" + vars["space"] + vars["CommittedCorrLoan"] + vars["space"] + "is a Duplicate loan. It is already committed";
+    await expect(page.locator("(//li[text()])[2]")).toContainText(vars["LoanDuplicateText"]);
+    await page.locator("//button[contains(text(),\"Okay\")]").click();
+    await page.locator("//span[contains(text(),\" Total Committed Loans\")]").waitFor({ state: 'visible' });
+    await page.locator("//span[contains(text(),\" Total Committed Loans\")]").click();
+    await expect(page.locator("//button[text()=\"$|CommittedCorrLoan|\"]")).toBeVisible();
+    vars["NoOfLoansAfterCommit"] = await page.locator("//div[normalize-space(text())=\"No. Loans\"]//following-sibling::h5").textContent() || '';
+    expect(String(vars["NoOfLoansBeforeCommit"])).toBe(vars["NoOfLoansAfterCommit"]);
+    await page.locator("//div[text()[normalize-space() = \"Total Loans\"]]").click();
+    await page.locator("//span[contains(@class,'circle')]").waitFor({ state: 'hidden' });
+    await expect(page.locator("//button[text()=\"$|CommittedCorrLoan|\"]")).toBeVisible();
+    await stepGroups.stepGroup_Verifying_Loan_Details(page, vars);
+    await page.locator("//div[text()=\"Open Auth Limit: \"]//..//div[@class=\"fw-semibold\"]").scrollIntoViewIfNeeded();
+    vars["OpenAuthLimit"] = await page.locator("//div[text()=\"Open Auth Limit: \"]//..//div[@class=\"fw-semibold\"]").textContent() || '';
+    vars["OpenAuthLimitChaseDirect"] = String('').split("(")["0"] || '';
+    vars["OpenAuthLimitPercentageChaseDirect"] = String('').split("(")["1"] || '';
+    vars["OpenAuthLimitPercentageChaseDirect"] = String(vars["OpenAuthLimitPercentageChaseDirect"]).replace(/\)%/g, '');
+    vars["AuthLimitChaseDirect"] = await page.locator("//div[text()=\"Auth Limit: \"]//..//div[@class=\"fw-semibold\"]").textContent() || '';
+    vars["LastCommittedBidChaseDirect"] = await page.locator("//div[normalize-space(text())=\"Last Committed Bid:\"]/following-sibling::div").textContent() || '';
+    vars["LastCommittedBidChaseDirect"] = String('').split("|")["0"] || '';
+    vars["LastCommittedBidChaseDirect"] = String(vars["LastCommittedBidChaseDirect"]).trim();
+    vars["LastCommittedBidLoanAmountChaseDirect"] = await page.locator("//div[contains(text(),\"Last Committed Bid:\")]//following::span[1]").textContent() || '';
+    vars["LastCommittedBidLoanAmountChaseDirect"] = String(vars["LastCommittedBidLoanAmountChaseDirect"]).substring(3);
+    expect(String(vars["OpenAuthLimitStandard"])).toBe(vars["OpenAuthLimitChaseDirect"]);
+    expect(String(vars["OpenAuthLimitPercentageStandard"])).toBe(vars["OpenAuthLimitPercentageChaseDirect"]);
+    expect(String(vars["AuthLimitStandard"])).toBe(vars["AuthLimitChaseDirect"]);
+    expect(String(vars["LastCommitedBidStandard"])).toBe(vars["LastCommittedBidChaseDirect"]);
+    expect(String(vars["LastCommittedBidLoanAmountStandard"])).toBe(vars["LastCommittedBidLoanAmountChaseDirect"]);
+  });
+});

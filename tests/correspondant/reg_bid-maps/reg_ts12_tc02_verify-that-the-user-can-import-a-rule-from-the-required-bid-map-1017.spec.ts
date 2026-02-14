@@ -1,0 +1,107 @@
+import { test, expect } from '@playwright/test';
+import path from 'path';
+import * as stepGroups from '../../../src/helpers/step-groups';
+
+test.describe('REG_Bid Maps', () => {
+  let vars: Record<string, string> = {};
+
+  test.beforeEach(async () => {
+    vars = {};
+  });
+
+  test('REG_TS12_TC02_Verify that the user can import a rule from the required bid map.', async ({ page }) => {
+    // Prerequisite: REG_TS12_TC01_Verify that the user can import a rule from the required bid map.
+    // TODO: Ensure prerequisite test passes first
+
+    await stepGroups.stepGroup_Creation_Of_Bid_Map_Upto_Header_Mapping(page, vars);
+    await page.locator("//span[text()='Enumeration Mapping']").click();
+    await page.locator("//h5[text()[normalize-space() = \"Save and Move to Next Page\"]]").waitFor({ state: 'visible' });
+    await page.locator("(//button[@type=\"button\"])[last()]").click();
+    await page.locator("//span[contains(@class,'circle')]").waitFor({ state: 'hidden' });
+    await page.locator("//span[text()[normalize-space() = \"Rules and Actions\"]]").click();
+    await expect(page.locator("//p[text()[normalize-space() = \"You have unidentified fields do you want to proceed further.\"]]")).toBeVisible();
+    await page.locator("(//button[@type=\"button\"])[last()]").click();
+    await page.locator("//span[contains(@class,'circle')]").waitFor({ state: 'hidden' });
+    await page.locator("//button[text()[normalize-space() = \"Import Rule\"]]").click();
+    vars["Bid Map Keyword"] = String(vars["Create New Maps"]).split("_")["1"] || '';
+    await page.locator("//input[@id=\"typeahead-dropdown\"]").fill(vars["Bid Map Keyword"]);
+    await page.locator("//small[text()='searching...']").waitFor({ state: 'hidden' });
+    await page.locator("//span[@class=\"ngb-highlight\"]").waitFor({ state: 'visible' });
+    await page.locator("//input[@id=\"typeahead-dropdown\"]").clear();
+    await page.locator("//input[@id=\"typeahead-dropdown\"]").fill(vars["Create New Maps"]);
+    await page.locator("//small[text()='searching...']").waitFor({ state: 'hidden' });
+    await page.locator("(//span[text()[normalize-space() = \"$|Create New Maps|\"]])[1]").click();
+    await page.getByText(vars["First Active Rule Name"]).waitFor({ state: 'visible' });
+    await expect(page.getByText(vars["Second Active Rule Name"])).toBeVisible();
+    await expect(page.getByText(vars["Draft Rule Name"])).not.toBeVisible();
+    await page.locator("//input[@id=\"secondary-search\"]").clear();
+    await page.locator("//input[@id=\"secondary-search\"]").fill(vars["Draft Rule Name"]);
+    await page.locator("//td[text()=' No result ']").waitFor({ state: 'visible' });
+    await page.locator("//input[@id=\"secondary-search\"]").clear();
+    await page.locator("//input[@id=\"secondary-search\"]").fill(vars["First Active Rule Name"]);
+    await page.getByText(vars["First Active Rule Name"]).waitFor({ state: 'visible' });
+    await page.locator("//input[@id=\"secondary-search\"]").clear();
+    await page.locator("//input[@id=\"secondary-search\"]").fill(vars["Second Active Rule Name"]);
+    await page.getByText(vars["Second Active Rule Name"]).waitFor({ state: 'visible' });
+    await page.locator("//input[@id=\"secondary-search\"]").clear();
+    await page.waitForLoadState('networkidle');
+    await expect(page.locator("//span[text()='Apply Selected ']/../..//button[@disabled]")).toBeVisible();
+    await page.locator("//td[contains(text(),'$|First Active Rule Name|')]/..//input[@type=\"checkbox\"]").check();
+    await expect(page.locator("//span[text()='Apply Selected ']/../..//button[@disabled]")).toBeVisible();
+    await expect(page.locator("//button[@aria-label=\"Apply Selected\"]")).toBeVisible();
+    vars["Apply Selected Count"] = await page.locator("//span[text()='Apply Selected ']/span").textContent() || '';
+    expect(String(vars["Apply Selected Count"])).toBe("1");
+    await page.locator("(//td[contains(text(),'$|Second Active Rule Name|')]/..//input[@type=\"checkbox\"])[last()]").check();
+    vars["Apply Selected Count"] = await page.locator("//span[text()='Apply Selected ']/span").textContent() || '';
+    expect(String(vars["Apply Selected Count"])).toBe("2");
+    await page.locator("//div[@id=\"multiSelectOptionsDropDown\"]//button[text()=\" Apply Selected \"]").click();
+    await page.locator("//h1[text()=\" Rules and Actions / \"]").waitFor({ state: 'visible' });
+    await expect(page.locator("(//input[@placeholder=\"Enter a Rule Name\"])[1]")).toHaveValue(vars["First Active Rule Name"]);
+    vars["First Active Rule Multiselected Value from 2nd BidMp"] = await page.locator("(//button[@id=\"multiSelectDropDown\"])[1]").textContent() || '';
+    vars["First Active Rule Multiselected Value from 2nd BidMp"] = String(vars["First Active Rule Multiselected Value from 2nd BidMp"]).trim();
+    vars["First Active Rule Multiselected Value"] = String(vars["First Active Rule Multiselected Value"]).trim();
+    expect(String(vars["First Active Rule Multiselected Value"])).toBe(vars["First Active Rule Multiselected Value from 2nd BidMp"]);
+    vars["Bid Field Selected Option From Active 1st Rule from 2nd BidMap"] = await page.locator("(//label[text()=' When Bid Field '])[1]/..//button[@id=\"singleSelectDropDownWithSearch\"]").textContent() || '';
+    vars["Bid Field Selected Option From Active 1st Rule from 2nd BidMap"] = String(vars["Bid Field Selected Option From Active 1st Rule from 2nd BidMap"]).trim();
+    vars["Bid Field Selected Option From Active 1st Rule"] = String(vars["Bid Field Selected Option From Active 1st Rule"]).trim();
+    expect(String(vars["Bid Field Selected Option From Active 1st Rule"])).toBe(vars["Bid Field Selected Option From Active 1st Rule from 2nd BidMap"]);
+    vars[" Bid Enumerated Tape Value Selected Option From Active 1st Rule from 2nd BidMap"] = await page.locator("(//label[text()=' Bid Enumerated Tape Value '])[1]/..//button[@id=\"singleSelectDropDownWithSearch\"]").textContent() || '';
+    vars["Bid Enumerated Tape Value Selected Option From Active 1st Rule"] = String(vars[" Bid Enumerated Tape Value Selected Option From Active 1st Rule"]).trim();
+    vars["Bid Enumerated Tape Value Selected Option From Active 1st Rule from 2nd BidMap"] = String(vars[" Bid Enumerated Tape Value Selected Option From Active 1st Rule from 2nd BidMap"]).trim();
+    expect(String(vars["Bid Enumerated Tape Value Selected Option From Active 1st Rule"])).toBe(vars["Bid Enumerated Tape Value Selected Option From Active 1st Rule from 2nd BidMap"]);
+    vars["Chase Field Name Selected Option From Active 1st Rule from 2nd BidMap"] = await page.locator("(//label[text()='Chase Field Name'])[1]/..//select[@id=\"id\"]").evaluate(el => { const s = el as HTMLSelectElement; return s.options[s.selectedIndex]?.text || ''; });
+    vars["Chase Field Name Selected Option From Active 1st Rule from 2nd BidMap"] = String(vars["Chase Field Name Selected Option From Active 1st Rule from 2nd BidMap"]).trim();
+    vars["Chase Field Name Selected Option From Active 1st Rule"] = String(vars["Chase Field Name Selected Option From Active 1st Rule"]).trim();
+    expect(String(vars["Chase Field Name Selected Option From Active 1st Rule"])).toBe(vars["Chase Field Name Selected Option From Active 1st Rule from 2nd BidMap"]);
+    vars["Chase Value Selected Option From Active 1st Rule from 2nd BidMap"] = await page.locator("(//label[text()='Chase Value'])[1]/..//select[@id=\"id\"]").evaluate(el => { const s = el as HTMLSelectElement; return s.options[s.selectedIndex]?.text || ''; });
+    vars["Chase Value Selected Option From Active 1st Rule from 2nd BidMap"] = String(vars["Chase Value Selected Option From Active 1st Rule from 2nd BidMap"]).trim();
+    vars["Chase Value Selected Option From Active 1st Rule"] = String(vars["Chase Value Selected Option From Active 1st Rule"]).trim();
+    await expect(page.locator("(//input[@placeholder=\"Enter a Rule Name\"])[2]")).toHaveValue(vars["Second Active Rule Name"]);
+    vars["Second Active Rule Multiselected Value from 2nd Bid Map"] = await page.locator("(//button[@id=\"multiSelectDropDown\"])[2]").textContent() || '';
+    vars["Second Active Rule Multiselected Value from 2nd Bid Map"] = String(vars["Second Active Rule Multiselected Value from 2nd Bid Map"]).trim();
+    vars["Second Active Rule Multiselected Value"] = String(vars["Second Active Rule Multiselected Value"]).trim();
+    expect(String(vars["Second Active Rule Multiselected Value from 2nd Bid Map"])).toBe(vars["Second Active Rule Multiselected Value"]);
+    vars["Bid Field Selected Option From Active 2nd Rule from 2nd BidMap"] = await page.locator("(//label[text()=' When Bid Field '])[2]/..//button[@id=\"singleSelectDropDownWithSearch\"]").textContent() || '';
+    vars["Bid Field Selected Option From Active 2nd Rule from 2nd BidMap"] = String(vars["Bid Field Selected Option From Active 2nd Rule from 2nd BidMap"]).trim();
+    vars["Bid Field Selected Option From Active 2nd Rule"] = String(vars["Bid Field Selected Option From Active 2nd Rule"]).trim();
+    expect(String(vars["Bid Field Selected Option From Active 2nd Rule from 2nd BidMap"])).toBe(vars["Bid Field Selected Option From Active 2nd Rule"]);
+    vars["Bid Enumerated Tape Value Selected Option From Active 2nd Rule"] = String(vars[" Bid Enumerated Tape Value Selected Option From Active 2nd Rule"]).trim();
+    vars["Bid Enumerated Tape Value Selected Option From Active 2nd Rule from 2nd Bid Map"] = await page.locator("(//label[text()=' Bid Enumerated Tape Value '])[2]/..//button[@id=\"singleSelectDropDownWithSearch\"]").textContent() || '';
+    vars["Bid Enumerated Tape Value Selected Option From Active 2nd Rule from 2nd Bid Map"] = String(vars["Bid Enumerated Tape Value Selected Option From Active 2nd Rule from 2nd Bid Map"]).trim();
+    expect(String(vars["Bid Enumerated Tape Value Selected Option From Active 2nd Rule"])).toBe(vars["Bid Enumerated Tape Value Selected Option From Active 2nd Rule from 2nd Bid Map"]);
+    vars["Chase Field Name Selected Option From Active 2nd Rule from 2nd BidMap"] = await page.locator("(//label[text()='Chase Field Name'])[2]/..//select[@id=\"id\"]").evaluate(el => { const s = el as HTMLSelectElement; return s.options[s.selectedIndex]?.text || ''; });
+    vars["Chase Field Name Selected Option From Active 2nd Rule from 2nd BidMap"] = String(vars["Chase Field Name Selected Option From Active 2nd Rule from 2nd BidMap"]).trim();
+    vars["Chase Field Name Selected Option From Active 2nd Rule"] = String(vars["Chase Field Name Selected Option From Active 2nd Rule"]).trim();
+    expect(String(vars["Chase Field Name Selected Option From Active 2nd Rule from 2nd BidMap"])).toBe(vars["Chase Field Name Selected Option From Active 2nd Rule"]);
+    vars["Chase Value Selected Option From Active 2nd Rule from 2nd BidMap"] = await page.locator("(//label[text()='Chase Value'])[2]/..//select[@id=\"id\"]").evaluate(el => { const s = el as HTMLSelectElement; return s.options[s.selectedIndex]?.text || ''; });
+    vars["Chase Value Selected Option From Active 2nd Rule from 2nd BidMap"] = String(vars["Chase Value Selected Option From Active 2nd Rule from 2nd BidMap"]).trim();
+    vars["Chase Value Selected Option From Active 2nd Rule"] = String(vars["Chase Value Selected Option From Active 2nd Rule"]).trim();
+    expect(String(vars["Chase Value Selected Option From Active 2nd Rule from 2nd BidMap"])).toBe(vars["Chase Value Selected Option From Active 2nd Rule"]);
+    await expect(page.locator("(//input[@placeholder=\"Enter a Rule Name\"])[3]")).toBeVisible();
+    await expect(page.locator("(//button[@id=\"multiSelectDropDown\"])[3]")).toBeVisible();
+    await expect(page.locator("(//label[text()=' When Bid Field '])[3]/..//button[@id=\"singleSelectDropDownWithSearch\"]")).toBeVisible();
+    await expect(page.locator("(//label[text()=' Bid Enumerated Tape Value '])[3]/..//button[@id=\"singleSelectDropDownWithSearch\"]")).toBeVisible();
+    await expect(page.locator("(//label[text()='Chase Field Name'])[3]/..//select[@id=\"id\"]")).toBeVisible();
+    await expect(page.locator("(//label[text()='Chase Value'])[3]/..//select[@id=\"id\"]")).toBeVisible();
+  });
+});
