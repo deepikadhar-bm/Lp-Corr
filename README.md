@@ -1,5 +1,5 @@
-# Lp-EXT 
-**Ext Web Application | Playwright Framework**
+# Lp-Corr 
+**Corr Web Application | Playwright Framework**
 
 This repository uses a restricted workflow to ensure code stability. The `main` branch is protected; only the Repository Owner can approve and merge changes.
 

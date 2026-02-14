@@ -11,7 +11,9 @@ Welcome to the team! To keep our `main` branch stable, we follow a strict review
 4. **Pull Request (PR):** Open a PR from your branch to `main`.
 
 ## Approval Process
+<<<<<<< HEAD
 * **Sole Approver:** @deepikadhar-bm (Repository Owner)
+
 * All code must be reviewed and approved before it can be merged.
 * Please ensure all tests pass before requesting a review.
 
