@@ -5,8 +5,11 @@ import { Page, Locator } from '@playwright/test';
  * Elements: 594
  */
 export class PriceOfferedPage {
-  constructor(private page: Page) {}
+  readonly page: Page;
 
+  constructor(page: Page) {
+    this.page = page;
+  }
   get Add_to_Commit_Button(): Locator {
     return this.page.locator("//button[@aria-label=\"Add loans to commit\"]");
   }
@@ -2383,4 +2386,8 @@ export class PriceOfferedPage {
     return this.page.locator("//span[text()[normalize-space() = \"Yes, Uncommit\"]]");
   }
 
+}
+
+export function getAddToCommitDropdown(): string {
+  throw new Error('Function not implemented.');
 }

@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import path from 'path';
 import * as stepGroups from '../../../src/helpers/step-groups';
+import { testDataManager } from 'testdata/TestDataManager';
 
 test.describe('Commitment List - TS_2', () => {
   let vars: Record<string, string> = {};
@@ -9,18 +10,28 @@ test.describe('Commitment List - TS_2', () => {
     vars = {};
   });
 
+    // GLOBAL LEVEL: Get the profile once
+  const profileName = "Commitment List";
+  const profile = testDataManager.getProfileByName(profileName);
+
   test('REG_TS04_TC02_Create a new commitment for a bid that already has an existing commitment, and verify that an new commitment entry is added and visible in the list screen', async ({ page }) => {
     // Prerequisite: REG_TS03_TC01_Verify that the loans marked as committed are displayed correctly on the respective co
     // TODO: Ensure prerequisite test passes first
 
-    const testData: Record<string, string> = {}; // TODO: Load from test data profile
+  if (profile && profile.data && profile.data.length > 0) {
+    const dataRow = profile.data[0];
+    // Transfer data from JSON to the vars object used by the test
+     vars["BidReqId"] = dataRow["RequestIDFromPRE_PR_1-1"];
 
+  } else {
+    throw new Error("TestDataManager: No data found for '" + profileName + "'");
+  }
     await page.locator("//ul[contains(@class, 'navbar-nav') and contains(@class, 'flex-column')]/li[3]/a[1]").click();
     await page.locator("//a[@href=\"#/commitments/price-offered\"]").click();
-    vars["BidReqId"] = testData["RequestIDFromPRE_PR_1-1"];
+   console.log("BidReqId from test data: " + vars["BidReqId"]);
     await page.locator("//div//input[@placeholder=\"Search By Bid Request ID\"]").fill(vars["BidReqId"]);
     await page.locator("//span[contains(@class,'circle')]").waitFor({ state: 'hidden' });
-    await page.locator("//a[contains(text(),\"$|BidReqId|\")]").click();
+    await page.locator("//a[contains(text(),\"" + vars["BidReqId"] + "\")]").click();
     await page.locator("//tbody//input[@type=\"checkbox\"]").waitFor({ state: 'visible' });
     await page.locator("//tbody//input[@type=\"checkbox\"]").check();
     await page.locator("//button[normalize-space(text())=\"Get Price\"]").click();
