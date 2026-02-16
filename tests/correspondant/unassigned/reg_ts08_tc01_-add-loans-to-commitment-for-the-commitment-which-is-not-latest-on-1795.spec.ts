@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import path from 'path';
 import * as stepGroups from '../../../src/helpers/step-groups';
+import { testDataManager } from 'testdata/TestDataManager';
 
 test.describe('Unassigned', () => {
   let vars: Record<string, string> = {};
@@ -9,13 +10,34 @@ test.describe('Unassigned', () => {
     vars = {};
   });
 
+ 
+
   test('REG_TS08_TC01_ Add loans to commitment for the commitment which is not latest one and verify auth limit values', async ({ page }) => {
-    const testData: Record<string, string> = {}; // TODO: Load from test data profile
+    
+    // Load test data for the "CommitmentList" profile and log it to the console
+    const profileName = "CommitmentList";
+    const profile = testDataManager.getProfileByName(profileName);
+    console.log("Profile data for '" + profileName + "': ", profile);
 
     await stepGroups.stepGroup_Login_to_CORR_Portal(page, vars);
+    // load test data from the testdata proile json and store it
+    if (profile && profile.data && profile.data.length > 0) {
+      const dataRow = profile.data[0];
+      console.log("Data row for '" + profileName + "': ", dataRow);
+
+      // Transfer data from JSON to the vars object used by the test
+      vars["BidReqId"] = dataRow["RequestIdFrom6-4"];
+
+      testDataManager.updateProfileData(profileName, { "RequestIDfrom14-1": dataRow["RequestIdFrom6-4"] });
+      console.log("BidReqId from test data: " + vars["RequestIDfrom14-1"]);
+
+    } else {
+      throw new Error("TestDataManager: No data found for '" + profileName + "'");
+    }
+
     await page.locator("//ul[contains(@class, 'navbar-nav') and contains(@class, 'flex-column')]/li[3]/a[1]").click();
     await page.locator("//a[@href=\"#/commitments/price-offered\"]").click();
-    vars["BidReqId"] = testData["RequestIdFrom6-4"];
+    console.log("BidReqId from test data: " + vars["BidReqId"]);
     await page.locator("//input[@placeholder=\"Search By Bid Request ID\"]").fill(vars["BidReqId"]);
     await page.locator("//span[contains(@class,'circle')]").waitFor({ state: 'hidden' });
     await page.locator("//a[contains(text(),\"$|BidReqId|\")]").click();
@@ -49,8 +71,8 @@ test.describe('Unassigned', () => {
       const fmt = "M/d/yy";
       // Map Java date format to Intl parts
       const parts = new Intl.DateTimeFormat('en-US', { ...opts, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }).formatToParts(d);
-      const p = Object.fromEntries(parts.map(({type, value}) => [type, value]));
-      return fmt.replace('yyyy', p.year || '').replace('yy', (p.year||'').slice(-2)).replace('MM', p.month || '').replace('dd', p.day || '').replace('HH', String(d.getHours()).padStart(2,'0')).replace('hh', p.hour || '').replace('mm', p.minute || '').replace('ss', p.second || '').replace('a', p.dayPeriod || '').replace(/M(?!M)/g, String(parseInt(p.month||'0'))).replace(/d(?!d)/g, String(parseInt(p.day||'0'))).replace(/h(?!h)/g, String(parseInt(p.hour||'0')));
+      const p = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
+      return fmt.replace('yyyy', p.year || '').replace('yy', (p.year || '').slice(-2)).replace('MM', p.month || '').replace('dd', p.day || '').replace('HH', String(d.getHours()).padStart(2, '0')).replace('hh', p.hour || '').replace('mm', p.minute || '').replace('ss', p.second || '').replace('a', p.dayPeriod || '').replace(/M(?!M)/g, String(parseInt(p.month || '0'))).replace(/d(?!d)/g, String(parseInt(p.day || '0'))).replace(/h(?!h)/g, String(parseInt(p.hour || '0')));
     })();
     vars[""] = String(vars["LastCommittedBidDate"]) + ' ' + String(vars["LastCommittedBidTime"]);
     vars["LastCommittedBidLoanAmountBeforeCommit"] = await page.locator("//div[contains(text(),\"Last Committed Bid:\")]//following::span[1]").textContent() || '';

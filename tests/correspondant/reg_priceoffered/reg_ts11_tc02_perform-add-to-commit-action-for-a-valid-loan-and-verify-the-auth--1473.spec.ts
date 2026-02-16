@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import path from 'path';
+import { PriceOfferedPage} from '../../../src/pages/correspondant/price-offered';
 import * as stepGroups from '../../../src/helpers/step-groups';
 
 test.describe('REG_PriceOffered', () => {
@@ -11,8 +12,10 @@ test.describe('REG_PriceOffered', () => {
 
   test('REG_TS11_TC02_Perform add to commit action for a valid loan and verify the auth limit, open auth limit and the Last committed bid values along with the [+count in header]', async ({ page }) => {
     const testData: Record<string, string> = {}; // TODO: Load from test data profile
-
+    const pricePage = new PriceOfferedPage(page);
     await stepGroups.stepGroup_Login_to_CORR_Portal(page, vars);
+    //reading from the page file
+    console.log(pricePage.Add_To_Commit_Dropdown.toString());
     await page.locator("//ul[contains(@class, 'navbar-nav') and contains(@class, 'flex-column')]/li[3]/a[1]").click();
     await page.locator("//a[@href=\"#/commitments/price-offered\"]").click();
     vars["BidReqIdPriceOffered"] = testData["RequestIDfrom11-1"];
@@ -37,7 +40,10 @@ test.describe('REG_PriceOffered', () => {
     await page.locator("//span[contains(@class,'circle')]").waitFor({ state: 'hidden' });
     await page.locator("//tr[td[@data-title=\"Bid Request ID\"]//div[contains(text(),\"$|BidReqIdPriceOffered|\")]]//td[@data-title=\"Comm. ID\"]").click();
     await page.locator("//div[text()[normalize-space() = \"Total Loans\"]]").waitFor({ state: 'visible' });
-    await page.locator("//div[text()[normalize-space() = \"Total Loans\"]]").click();
+    // await page.locator("//div[text()[normalize-space() = \"Total Loans\"]]").click();
+    await page.locator(pselements.getAddToCommitDropdown()).click();
+   
+   
     await page.locator("//button[@id='commitdropdownMenuButton']").waitFor({ state: 'visible' });
     await page.locator("//td[@role=\"cell\"]//input[@type=\"checkbox\"]").waitFor({ state: 'visible' });
     await page.locator("//td[@role=\"cell\"]//input[@type=\"checkbox\"]").check();
