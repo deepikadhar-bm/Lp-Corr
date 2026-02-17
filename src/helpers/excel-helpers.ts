@@ -38,8 +38,10 @@ export function writeCell(filePath: string, row: number | string, col: number | 
     if (!ws[cellRef]) ws[cellRef] = { t: 's', v: value };
     else ws[cellRef].v = value;
     XLSX.writeFile(wb, filePath);
-  } catch {
-    // Silently fail on write errors
+  } 
+  catch (error) {
+  console.error(`[writeCell] ❌ Error writing cell: ${error}`);
+  throw error;
   }
 }
 

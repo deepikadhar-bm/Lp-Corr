@@ -3,6 +3,7 @@
  */
 import * as fs from 'fs';
 import * as path from 'path';
+export const UPLOADS_PATH = path.join(process.cwd(), 'Uploads');
 
 export function extractPdfText(filePath: string): string {
   try {
