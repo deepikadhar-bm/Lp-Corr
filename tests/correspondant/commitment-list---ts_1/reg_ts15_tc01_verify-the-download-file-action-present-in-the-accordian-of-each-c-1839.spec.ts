@@ -20,16 +20,16 @@ test.describe('Commitment List - TS_1', () => {
 
     await stepGroups.stepGroup_Login_to_CORR_Portal(page, vars);
     await page.locator("//ul[contains(@class, 'navbar-nav') and contains(@class, 'flex-column')]/li[3]/a[1]").click();
-    await page.locator("//span[text()[normalize-space() = \"Committed List\"]]").click();
+    await page.locator("//span[text()[normalize-space() = 'Committed List']]").click();
     await page.locator("//span[contains(@class,'circle')]").waitFor({ state: 'hidden' });
-    vars["BidReqId"] = await page.locator("//td[@data-title=\"Bid Request ID\"]").textContent() || '';
+    vars["BidReqId"] = await page.locator("//td[@data-title='Bid Request ID']").textContent() || '';
     vars["BidReqId"] = String(vars["BidReqId"]).trim();
-    await page.locator("//td[@data-title=\"Comm. ID\"]//a[contains(@aria-label,\"View details for commitment\")]").click();
-    await page.locator("//span[contains(text(),\" Total Committed Loans\")]").waitFor({ state: 'visible' });
-    await page.locator("//span[contains(text(),\" Total Committed Loans\")]").click();
-    await page.locator("//a[normalize-space(text())=\"Download File\"]").waitFor({ state: 'visible' });
-    vars["CommitmentID"] = await page.locator("//div[text()=\"Commit. ID\"]/following-sibling::h5").textContent() || '';
-    await page.locator("//a[normalize-space(text())=\"Download File\"]").click();
+    await page.locator("//td[@data-title='Comm. ID']//a[contains(@aria-label,'View details for commitment')]").click();
+    await page.locator("//span[contains(text(),' Total Committed Loans')]").waitFor({ state: 'visible' });
+    await page.locator("//span[contains(text(),' Total Committed Loans')]").click();
+    await page.locator("//a[normalize-space(text())='Download File']").waitFor({ state: 'visible' });
+    vars["CommitmentID"] = await page.locator("//div[text()='Commit. ID']/following-sibling::h5").textContent() || '';
+    await page.locator("//a[normalize-space(text())='Download File']").click();
     vars["space"] = "key_blank";
     vars["DateAndTimeFormat"] = "MM/dd/yyyy" + vars["space"] + "HH:mm";
     vars["CurrentDateAndTime"] = (() => {

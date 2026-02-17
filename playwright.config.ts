@@ -2,7 +2,9 @@ import { defineConfig, devices } from '@playwright/test';
 import dotenv from 'dotenv';
 import path from 'path';
 
+
 dotenv.config({ path: path.resolve(__dirname, '.env') });
+
 
 export default defineConfig({
   testDir: './tests',
@@ -22,8 +24,10 @@ export default defineConfig({
   use: {
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
+    video: 'on',
     actionTimeout: 30_000,
     navigationTimeout: 60_000,
+    
   },
   projects: [
     {
@@ -31,8 +35,11 @@ export default defineConfig({
       testDir: './tests/correspondant',
       use: {
         ...devices['Desktop Chrome'],
-        baseURL: process.env.CORR_QA_URL || 'https://ext-qa.lpcorrtest.com/cp/',
+      viewport: { width: 2560, height: 1440 }, // override here
+      deviceScaleFactor: 1,
+      baseURL: process.env.CORR_QA_URL || 'https://ext-qa.lpcorrtest.com/cp/',
       },
     },
   ],
+  
 });

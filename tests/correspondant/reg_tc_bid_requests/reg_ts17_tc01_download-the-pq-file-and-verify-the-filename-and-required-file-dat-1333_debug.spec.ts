@@ -16,7 +16,15 @@ test.describe('REG_TC_Bid_Requests [DEBUG]', () => {
       await download.saveAs(filePath);
       vars['_lastDownloadPath'] = filePath;
     });
-
+  // test('your existing test', async ({ page }) => {
+  // // Add these 3 lines at the start
+  // const viewportSize = page.viewportSize();
+  // console.log('Viewport:', viewportSize);
+  
+  // // Rest of your existing test code...
+  // await page.goto('/');
+  // // ... etc
+//});
     console.log('\n========== TEST START ==========');
     await stepGroups.stepGroup_Login_to_CORR_Portal(page, vars);
     console.log('[STEP] Logged in to CORR Portal');

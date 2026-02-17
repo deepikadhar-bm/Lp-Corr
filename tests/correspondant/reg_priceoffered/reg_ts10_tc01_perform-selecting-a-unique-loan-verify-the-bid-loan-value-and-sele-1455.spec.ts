@@ -14,10 +14,10 @@ test.describe('REG_PriceOffered', () => {
     // TODO: Ensure prerequisite test passes first
 
     await page.locator("//ul[contains(@class, 'navbar-nav') and contains(@class, 'flex-column')]/li[3]/a[1]").click();
-    await page.locator("//a[@href=\"#/commitments/price-offered\"]").click();
+    await page.locator("//a[@href='#/commitments/price-offered']").click();
     vars["PriceOfferedBidReqId"] = vars["RequestIDDetails"];
     vars["PriceOfferedBidReqId"] = String(vars["PriceOfferedBidReqId"]).trim();
-    await page.locator("//input[@placeholder=\"Search By Bid Request ID\"]").click();
+    await page.locator("//input[@placeholder='Search By Bid Request ID']").click();
     await page.locator("//input[@placeholder=\"Search By Bid Request ID\"]").fill(vars["PriceOfferedBidReqId"]);
     await page.locator("//span[contains(@class,'circle')]").waitFor({ state: 'hidden' });
     await page.locator("//a[contains(text(),\"$|PriceOfferedBidReqId|\")]").click();
