@@ -1,6 +1,6 @@
 import { test } from '@playwright/test';
 import path from 'path';
-import * as excelHelper from '../../../src/helpers/excel-helpers';
+import * as excelHelper from '../../../src/helpers/excelHelpers';
 import { UPLOADS_PATH } from '../../../src/helpers/file-helpers';
 
 test.describe('Unassigned', () => {

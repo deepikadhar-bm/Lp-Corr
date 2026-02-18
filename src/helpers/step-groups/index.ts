@@ -5,7 +5,7 @@
 import { Page } from '@playwright/test';
 import { expect } from '@playwright/test';
 import path from 'path';
-import * as excelHelper from '../excel-helpers';
+import * as excelHelper from '../../../src/helpers/excelHelper';
 import { correspondantEnv } from '../../config/environments';
 import dotenv from 'dotenv';
 
@@ -48,6 +48,7 @@ export async function stepGroup_Rename_File(page: import('@playwright/test').Pag
   await page.waitForTimeout(2000);
   vars[""] = vars['_lastDownloadPath'] ? require('path').basename(vars['_lastDownloadPath']) : '';
   vars["Total Headers From Xls"] = excelHelper.readRow(vars['_lastDownloadPath'] || '', "0", "0");
+  
   // TODO: Manual conversion needed - unknown template 88
   // Action: Switch to the window by index 0
 }
