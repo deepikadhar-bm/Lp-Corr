@@ -882,3 +882,28 @@ export function getCellByPosition(
   if (!cell) return null;
   return cell.v instanceof Date ? cell.v : (cell.v ?? null);
 }
+/**
+ * Returns a single row as a comma-separated string.
+ * If rowIndex is 0, it returns the header row.
+ * rowIndex 1 and above return data rows.
+ */
+export function getRowDataWithCommaSeperator(
+  filePath: string,
+  rowIndex: number, // 0 = Header, 1 = First Data Row
+  sheetName?: string
+): string {
+  const wb = XLSX.readFile(path.resolve(filePath), { cellDates: true });
+  const sheet = resolveSheet(wb, sheetName);
+  
+  // Convert sheet to 2D array: [[A1, B1], [A2, B2]]
+  const rows: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+
+  if (!rows[rowIndex]) {
+    throw new Error(
+      `Row index ${rowIndex} is out of range. Total rows (including header): ${rows.length}`
+    );
+  }
+
+  // Map row values to string and join with commas
+  return rows[rowIndex].map(cell => String(cell).trim()).join(", ");
+}

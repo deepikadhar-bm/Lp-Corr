@@ -23,6 +23,9 @@ test('try excel', async () => {
   console.log("Sheet Count:", excelHelper.readRow(filePath, 0, "Sheet1"));
   console.log("getCellByPosition:", excelHelper.getCellByPosition(filePath, 0, 2, 9));
   await excelHelper.updateCell({filePath, sheetName: "Sheet1", columnHeader: "Correspondent Loan Number",rowIndex: 1, value: "wecan do it"});
-  
+  console.log("===============================================");
+  console.log("Row date: 0", excelHelper.getRowDataWithCommaSeperator(filePath, 0, "Sheet1"));
+  console.log("===============================================");
+  console.log("Row date: 1", excelHelper.getRowDataWithCommaSeperator(filePath, 1, "Sheet1"));
 }); 
 });
